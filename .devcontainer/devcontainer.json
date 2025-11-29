@@ -1,0 +1,24 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+{
+  "name": "Libria Dev Container",
+  "remoteUser": "root",
+  "dockerComposeFile": "../docker/docker-compose.yml",
+  "service": "web",
+  "workspaceFolder": "/app",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+	"vscode": {
+		"extensions": [
+		  "ms-dotnettools.csharp",
+		  "ms-azuretools.vscode-docker"
+		],
+		"settings": {
+		  "terminal.integrated.defaultProfile.linux": "bash",
+		  "dotnet.defaultSolution": "/app/Libria.sln",
+		  "omnisharp.useModernNet": true
+		},
+	}
+  },
+  "postCreateCommand": "dotnet restore /app/Libria.sln"
+}

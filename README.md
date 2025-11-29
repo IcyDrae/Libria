@@ -14,6 +14,15 @@ It’s a mix between “self-hosted Google Drive” + “Calibre Web” + “Jel
 
 ---
 
+# How to install
+
+1. ``` git clone https://github.com/IcyDrae/Libria.git ```
+2. ``` cd Libria ```
+3. ``` mkdir data ```
+4. ``` docker compose -f docker/docker-compose.yml up --build -d ```
+
+---
+
 # 🧱 Architecture
 
 ### Backend (C# / .NET 8)
@@ -26,13 +35,11 @@ It’s a mix between “self-hosted Google Drive” + “Calibre Web” + “Jel
 - Razor Pages
 
 ### Database (MySQL)
-Tables you definitely need:
-- **Users**
-- **Files**
-- **FileMetadata** (title, author, tags, mime type, page count, duration, etc.)
-- **Tags**
-- **TagRelations**
-- **Collections/Playlists** (optional, but cool)
+- **File**
+- **FileMetadata**
+- **FileTag**
+- **Tag**
+- **Collection**
 
 ---
 

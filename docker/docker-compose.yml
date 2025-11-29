@@ -10,6 +10,9 @@ services:
       - ConnectionStrings__DefaultConnection=server=db;user=admin;password=admin;database=libria_db
     depends_on:
       - db
+    volumes:
+      - ../:/app   # mount host folder to /app in container
+      - ../data:/app/data
 
   db:
     image: mysql:8.0

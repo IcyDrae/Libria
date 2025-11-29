@@ -4,7 +4,5 @@ WORKDIR /app
 COPY Libria.csproj ./
 RUN dotnet restore Libria.csproj
 
-COPY . ./
-
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:8080"]

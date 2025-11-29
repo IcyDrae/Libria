@@ -5,6 +5,55 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Upload your files here</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        <label for="file">Choose a file:</label>
+        <input type="file" id="file" name="file"
+        accept=".pdf, .epub, .jpg, .jpeg, .png, .mp3, .docx, .txt" />        <button type="submit">Upload</button>
+    </form>
+
+    @if (Model.UploadMessage != null)
+    {
+        <p>@Model.UploadMessage</p>
+    }
 </div>
+
+<hr />
+
+<h2>Uploaded Files</h2>
+
+@if (!Model.UploadedFiles.Any())
+{
+    <p>No files uploaded yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var f in Model.UploadedFiles)
+        {
+            <tr>
+                <td>@f.FileName</td>
+                <td>@(f.FileSize / 1024) KB</td>
+                <td>@f.UploadedAt.ToLocalTime()</td>
+                <td>
+                    <a href="/ViewFile/@f.Id">View</a>
+
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
