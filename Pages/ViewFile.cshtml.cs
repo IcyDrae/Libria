@@ -1,32 +1,42 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 public class ViewFileModel : PageModel
 {
     private readonly AppDbContext _db;
-    private readonly IWebHostEnvironment _env;
 
-    public ViewFileModel(AppDbContext db, IWebHostEnvironment env)
+    public ViewFileModel(AppDbContext db)
     {
         _db = db;
-        _env = env;
     }
 
-    public File File { get; set; }
+    public List<File> PdfFiles { get; set; } = new();
+    public List<File> EpubFiles { get; set; } = new();
+    public List<File> ImageFiles { get; set; } = new();
+    public List<File> AudioFiles { get; set; } = new();
+    public List<File> DocFiles { get; set; } = new();
 
-    public async Task<IActionResult> OnGetAsync(int id)
+    public async Task OnGetAsync(int id)
     {
-        File = await _db.File.FirstOrDefaultAsync(f => f.Id == id);
-        if (File == null)
-            return NotFound();
+        // Load all relevant files from database first
+        var allFiles = await _db.File
+            .Where(f => f.Id == id) // adjust as needed
+            .ToListAsync();
 
-        // Build correct absolute path
-        var physicalPath = Path.Combine(_env.ContentRootPath, File.FilePath);
+        // Filter in-memory using Path methods
+        PdfFiles = allFiles.Where(f => Path.GetExtension(f.FileName).ToLower() == ".pdf").ToList();
+        EpubFiles = allFiles.Where(f => Path.GetExtension(f.FileName).ToLower() == ".epub").ToList();
+        ImageFiles = allFiles.Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f.FileName).ToLower())).ToList();
+        AudioFiles = allFiles.Where(f => Path.GetExtension(f.FileName).ToLower() == ".mp3").ToList();
+        DocFiles = allFiles.Where(f => new[] { ".txt", ".docx" }.Contains(Path.GetExtension(f.FileName).ToLower())).ToList();
+    }
 
-        if (!System.IO.File.Exists(physicalPath))
-            return NotFound();
-
-        return Page();
+    // Helper to generate URL for Razor page
+    public string GetFileUrl(string path)
+    {
+        var folder = Path.GetDirectoryName(path)?.Replace("\\", "/");
+        var fileName = Path.GetFileName(path);
+        return "/" + folder + "/" + Uri.EscapeDataString(fileName);
     }
 }

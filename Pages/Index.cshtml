@@ -10,24 +10,20 @@
     <form method="post" enctype="multipart/form-data">
         <input type="file" id="file" name="file" accept=".pdf,.epub,.jpg,.jpeg,.png,.mp3,.docx,.txt" />
         <label for="file" class="custom-upload-btn">Choose File</label>
+        <span id="file-name" style="margin-left:10px;"></span>
         <button type="submit">Upload</button>
     </form>
 
-    @if (Model.UploadMessage != null)
+    @if (TempData["UploadMessage"] != null)
     {
-        <p>@Model.UploadMessage</p>
+        <p>@TempData["UploadMessage"]</p>
     }
 </div>
 
 <hr />
 
-<h2>Uploaded Files</h2>
-
-@if (!Model.UploadedFiles.Any())
-{
-    <p>No files uploaded yet.</p>
-}
-else
+<h2>PDFs</h2>
+@if (Model.PdfFiles.Any())
 {
     <table class="table">
         <thead>
@@ -39,27 +35,179 @@ else
             </tr>
         </thead>
         <tbody>
-        @foreach (var f in Model.UploadedFiles)
+        @foreach (var f in Model.PdfFiles)
         {
             <tr>
                 <td>@f.FileName</td>
                 <td>@(f.FileSize / 1024) KB</td>
                 <td>@f.UploadedAt.ToLocalTime()</td>
                 <td>
-                    <a href="/ViewFile/@f.Id">View</a>
-
-                    <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id" style="display:inline;">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
+                    <div class="action-buttons-vertical">
+                        <a class="btn btn-primary" href="/ViewFile/@f.Id">View</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
         }
         </tbody>
     </table>
 }
+else
+{
+    <p>No PDFs uploaded yet.</p>
+}
+
+<h2>EPUBs</h2>
+@if (Model.EpubFiles.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var f in Model.EpubFiles)
+        {
+            <tr>
+                <td>@f.FileName</td>
+                <td>@(f.FileSize / 1024) KB</td>
+                <td>@f.UploadedAt.ToLocalTime()</td>
+                <td>
+                    <div class="action-buttons-vertical">
+                        <a class="btn btn-primary" href="/ViewFile/@f.Id">View</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No EPUBs uploaded yet.</p>
+}
+
+<h2>Images</h2>
+@if (Model.ImageFiles.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var f in Model.ImageFiles)
+        {
+            <tr>
+                <td>@f.FileName</td>
+                <td>@(f.FileSize / 1024) KB</td>
+                <td>@f.UploadedAt.ToLocalTime()</td>
+                <td>
+                    <div class="action-buttons-vertical">
+                        <a class="btn btn-primary" href="/ViewFile/@f.Id">View</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No images uploaded yet.</p>
+}
+
+<h2>Audio</h2>
+@if (Model.AudioFiles.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var f in Model.AudioFiles)
+        {
+            <tr>
+                <td>@f.FileName</td>
+                <td>@(f.FileSize / 1024) KB</td>
+                <td>@f.UploadedAt.ToLocalTime()</td>
+                <td>
+                    <div class="action-buttons-vertical">
+                        <a class="btn btn-primary" href="/ViewFile/@f.Id">View</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No audio files uploaded yet.</p>
+}
+
+<h2>Documents</h2>
+@if (Model.DocFiles.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var f in Model.DocFiles)
+        {
+            <tr>
+                <td>@f.FileName</td>
+                <td>@(f.FileSize / 1024) KB</td>
+                <td>@f.UploadedAt.ToLocalTime()</td>
+                <td>
+                    <div class="action-buttons-vertical">
+                        <a class="btn btn-primary btn-sm" href="/ViewFile/@f.Id">View</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No docs uploaded yet.</p>
+}
 
 <style>
-
 body {
     font-family: "Red Hat Mono", monospace;    
 }
@@ -73,7 +221,7 @@ form {
 .custom-upload-btn {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #4CAF50; /* green */
+    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 5px;
@@ -85,7 +233,6 @@ form {
     background-color: #45a049;
 }
 
-/* hide the real input */
 #file {
     display: none;
 }
@@ -96,9 +243,38 @@ form button {
     font-size: 16px;
     cursor: pointer;
     border-radius: 5px;
-    background-color: #008CBA; /* blue */
+    background-color: #008CBA;
     color: white;
     border: none;
 }
 
+.action-buttons-vertical {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; /* space between buttons */
+}
+.action-buttons-vertical form {
+    margin: 0; /* remove default form spacing */
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+table th, table td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 </style>
+
+<script>
+const fileInput = document.getElementById('file');
+const fileNameSpan = document.getElementById('file-name');
+
+fileInput.addEventListener('change', () => {
+    fileNameSpan.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : '';
+});
+</script>

@@ -1,18 +1,111 @@
 @page "{id:int}"
 @model ViewFileModel
 @{
-    ViewData["Title"] = "View File";
+    ViewData["Title"] = "View Files";
 }
 
-@if (Model.File == null)
+@if (Model.PdfFiles.Any())
 {
-    <p>File not found.</p>
+    @foreach (var f in Model.PdfFiles)
+    {
+        <div style="margin-bottom:20px;">
+            <h3>@f.FileName</h3>
+            <iframe src="@Model.GetFileUrl(f.FilePath)" style="width:100%; height:600px; border:none;"></iframe>
+        </div>
+    }
 }
-else
-{
-    <h2>@Model.File.FileName</h2>
 
-    <iframe src="/@Model.File.FilePath"
-            style="width:100%; height:90vh; border:none;">
-    </iframe>
+@if (Model.EpubFiles.Any())
+{
+    @foreach (var f in Model.EpubFiles)
+    {
+        <div style="margin-bottom:20px; position:relative;">
+            <h3>@f.FileName</h3>
+            <div id="epub-controls-@f.Id" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); background:#fffcc; padding:8px 12px; border-radius:5px; z-index:1000;">
+                <button class="prev">⬅ Prev</button>
+                <button class="next">Next ➡</button>
+                <button class="start">⏮ Start</button>
+                <button class="end">⏭ End</button>
+                <button class="toggle-spread">Toggle Spread</button>
+                <button class="increase-font">A+</button>
+                <button class="decrease-font">A-</button>
+                <span class="progress" style="margin-left:10px;">0%</span>
+            </div>
+            <div id="epub-viewer-@f.Id" style="width:100%; height:600px; border:1px solid #ccc;"></div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+        <script>
+            (function() {
+                const url = "@Model.GetFileUrl(f.FilePath)";
+                const book = ePub(url);
+                const viewer = "epub-viewer-@f.Id";
+                const rendition = book.renderTo(viewer, { width: "100%", height: "100%" });
+                rendition.display();
+
+                const container = document.getElementById("epub-controls-@f.Id");
+                let spread = 'none';
+                let fontSize = 100;
+
+                container.querySelector(".prev").addEventListener("click", () => rendition.prev());
+                container.querySelector(".next").addEventListener("click", () => rendition.next());
+                container.querySelector(".start").addEventListener("click", () => rendition.display(0));
+                container.querySelector(".end").addEventListener("click", () => rendition.display(book.locations.length()));
+                container.querySelector(".toggle-spread").addEventListener("click", () => {
+                    spread = (spread === 'none') ? 'both' : 'none';
+                    rendition.spread(spread);
+                });
+                container.querySelector(".increase-font").addEventListener("click", () => {
+                    fontSize += 10;
+                    rendition.themes.fontSize(fontSize + '%');
+                });
+                container.querySelector(".decrease-font").addEventListener("click", () => {
+                    fontSize = Math.max(50, fontSize - 10);
+                    rendition.themes.fontSize(fontSize + '%');
+                });
+
+                const progressEl = container.querySelector(".progress");
+                rendition.on('relocated', loc => {
+                    progressEl.textContent = Math.floor(loc.start.percentage * 100) + "%";
+                });
+            })();
+        </script>
+    }
+}
+
+@if (Model.ImageFiles.Any())
+{
+    @foreach (var f in Model.ImageFiles)
+    {
+        <div style="margin-bottom:20px;">
+            <h3>@f.FileName</h3>
+            <img src="@Model.GetFileUrl(f.FilePath)" style="max-width:100%; height:auto;" />
+        </div>
+    }
+}
+
+@if (Model.AudioFiles.Any())
+{
+    @foreach (var f in Model.AudioFiles)
+    {
+        <div style="margin-bottom:20px;">
+            <h3>@f.FileName</h3>
+            <audio controls style="width:100%;">
+                <source src="@Model.GetFileUrl(f.FilePath)" type="audio/mpeg" />
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    }
+}
+
+@if (Model.DocFiles.Any())
+{
+    @foreach (var f in Model.DocFiles)
+    {
+        <div style="margin-bottom:20px;">
+            <h3>@f.FileName</h3>
+            <a href="@Model.GetFileUrl(f.FilePath)" target="_blank">Download / Open</a>
+        </div>
+    }
 }

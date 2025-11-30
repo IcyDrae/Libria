@@ -21,7 +21,9 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "data")),
-    RequestPath = "/data"
+    RequestPath = "/data",
+    ServeUnknownFileTypes = true, // serve unknown extensions like .epub
+    DefaultContentType = "application/octet-stream"
 });
 
 // Configure the HTTP request pipeline.

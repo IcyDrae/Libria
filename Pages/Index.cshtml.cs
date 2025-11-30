@@ -7,7 +7,11 @@ public class IndexModel : PageModel
     private readonly AppDbContext _db;
     private readonly IWebHostEnvironment _env;
 
-    public IWebHostEnvironment Env => _env;
+    public List<File> PdfFiles { get; set; } = new();
+    public List<File> EpubFiles { get; set; } = new();
+    public List<File> ImageFiles { get; set; } = new();
+    public List<File> AudioFiles { get; set; } = new();
+    public List<File> DocFiles { get; set; } = new();
 
     public IndexModel(AppDbContext db, IWebHostEnvironment env)
     {
@@ -18,53 +22,52 @@ public class IndexModel : PageModel
     [BindProperty]
     public IFormFile? File { get; set; }
     public List<File> UploadedFiles { get; set; } = new();
-
     public string? UploadMessage { get; set; }
 
-    public string Extension;
+    // Internal helper fields
+    private string Extension;
+    private string OriginalName;
+    private string FinalFileName;
+    private string FolderPath;
+    private string FinalPath;
+    private FileMetadata? Metadata;
 
-    public string OriginalName;
-
-    public string FinalFileName;
-
-    public string PDFSavePath;
-
-    public string FinalPath;
-
-    public FileMetadata Metadata;
+    public string GetFileUrl(string path)
+    {
+        var folder = Path.GetDirectoryName(path)?.Replace("\\", "/");
+        var fileName = Path.GetFileName(path);
+        return "/" + folder + "/" + Uri.EscapeDataString(fileName);
+    }
 
     public async Task OnGetAsync()
     {
-        UploadedFiles = await _db.File
-            .OrderByDescending(f => f.UploadedAt)
-            .ToListAsync();
+        await PopulateFileLists();
     }
 
     public async Task<IActionResult> OnPostAsync()
     {
         if (File == null || File.Length == 0)
         {
-            UploadMessage = "No file selected.";
-            return Page();
+            TempData["UploadMessage"] = "No file selected.";
+            return RedirectToPage();
         }
 
-        HandleFileName();
-
-        BuildPDFPath();
-
-        HandleDirectory(PDFSavePath);
-        this.FinalPath = Path.Combine(PDFSavePath, FinalFileName);
-
+        ExtractFileInfo();
+        BuildFolderPath();
+        EnsureDirectoryExists();
         HandleDuplicateFileNames();
-
         await SaveFileLocally();
+        await StoreMetadataIfPdf();
+        await SaveFileRecordInDatabase();
 
-        await StorePDFMetadata();
+        UploadMessage = "File uploaded and saved successfully!";
 
-        await StoreFileRecordInDatabase();
+        await PopulateFileLists();
 
-        UploadMessage = "File uploaded and saved to database!";
-        return Page();
+        
+        TempData["UploadMessage"] = "File uploaded and saved successfully!";
+
+        return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(int id)
@@ -77,42 +80,63 @@ public class IndexModel : PageModel
         if (fileRecord == null)
             return RedirectToPage();
 
-        // Delete physical file
         if (System.IO.File.Exists(fileRecord.FilePath))
             System.IO.File.Delete(fileRecord.FilePath);
 
-        // Delete tags connecting to metadata (FileTag)
         if (fileRecord.Metadata != null)
         {
             _db.FileTag.RemoveRange(fileRecord.Metadata.FileTags);
             _db.FileMetadata.Remove(fileRecord.Metadata);
         }
 
-        // Delete the main file entry
         _db.File.Remove(fileRecord);
-
         await _db.SaveChangesAsync();
 
         return RedirectToPage();
     }
 
-
-    private void HandleFileName()
+    private async Task PopulateFileLists()
     {
-        this.Extension = Path.GetExtension(File.FileName);
-        this.OriginalName = Path.GetFileNameWithoutExtension(File.FileName);
-        this.FinalFileName = File.FileName;
+        UploadedFiles = await _db.File
+            .OrderByDescending(f => f.UploadedAt)
+            .ToListAsync();
+
+        // Group by type
+        PdfFiles = UploadedFiles.Where(f => Path.GetExtension(f.FileName).ToLower() == ".pdf").ToList();
+        EpubFiles = UploadedFiles.Where(f => Path.GetExtension(f.FileName).ToLower() == ".epub").ToList();
+        ImageFiles = UploadedFiles.Where(f => new[] { ".jpg", ".jpeg", ".png" }.Contains(Path.GetExtension(f.FileName).ToLower())).ToList();
+        AudioFiles = UploadedFiles.Where(f => Path.GetExtension(f.FileName).ToLower() == ".mp3").ToList();
+        DocFiles = UploadedFiles.Where(f => new[] { ".txt", ".docx" }.Contains(Path.GetExtension(f.FileName).ToLower())).ToList();
     }
 
-    private void BuildPDFPath()
+    private void ExtractFileInfo()
     {
-        this.PDFSavePath = Path.Combine("data", "library", "pdfs");
+        Extension = Path.GetExtension(File.FileName).ToLower();
+        OriginalName = Path.GetFileNameWithoutExtension(File.FileName);
+        FinalFileName = File.FileName;
     }
 
-    private void HandleDirectory(string Path)
+    private void BuildFolderPath()
     {
-        if (!Directory.Exists(Path))
-            Directory.CreateDirectory(Path);
+        string subfolder = Extension switch
+        {
+            ".pdf" => "pdfs",
+            ".epub" => "epubs",
+            ".jpg" or ".jpeg" or ".png" => "images",
+            ".mp3" => "audio",
+            ".docx" or ".txt" => "docs",
+            _ => "others"
+        };
+
+        FolderPath = Path.Combine("data", "library", subfolder);
+    }
+
+    private void EnsureDirectoryExists()
+    {
+        if (!Directory.Exists(FolderPath))
+            Directory.CreateDirectory(FolderPath);
+
+        FinalPath = Path.Combine(FolderPath, FinalFileName);
     }
 
     private void HandleDuplicateFileNames()
@@ -121,35 +145,32 @@ public class IndexModel : PageModel
         while (System.IO.File.Exists(FinalPath))
         {
             FinalFileName = $"{OriginalName} ({counter}){Extension}";
-            FinalPath = Path.Combine(PDFSavePath, FinalFileName);
+            FinalPath = Path.Combine(FolderPath, FinalFileName);
             counter++;
         }
     }
 
     private async Task SaveFileLocally()
     {
-        using (var stream = new FileStream(FinalPath, FileMode.Create))
-        {
-            await File.CopyToAsync(stream);
-        }
+        using var stream = new FileStream(FinalPath, FileMode.Create);
+        await File.CopyToAsync(stream);
     }
 
-    private async Task StorePDFMetadata()
+    private async Task StoreMetadataIfPdf()
     {
-        if (Extension.ToLower() == ".pdf")
+        if (Extension == ".pdf")
         {
-            this.Metadata = new FileMetadata
+            Metadata = new FileMetadata
             {
-                MimeType = "application/pdf",
-                // Could add Title, Author, PageCount later when I implement extraction
+                MimeType = "application/pdf"
+                // Optionally add Title, Author, PageCount later
             };
-
             _db.FileMetadata.Add(Metadata);
-            await _db.SaveChangesAsync(); // must save so metadata.Id exists
+            await _db.SaveChangesAsync(); // Save to get Metadata.Id
         }
     }
 
-    private async Task StoreFileRecordInDatabase()
+    private async Task SaveFileRecordInDatabase()
     {
         var fileRecord = new File
         {

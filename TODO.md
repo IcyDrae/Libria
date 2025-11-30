@@ -25,5 +25,9 @@ only for the pdf
 15. refactor first upload logic
 16. show uploaded files in a list in the UI [x]
 17. two buttons, view to view in browser, and delete to delete the file completely, update the UI accordingly on deletion [x]
-18. view the file in the browser []
+18. view the file in the browser [x]
+19. style the upload form [x]
+20. upload all other file types and create subfolders for each type [x]
+21. view epubs in the browser [x]
+22. fix uploading removes all files from the UI
 
