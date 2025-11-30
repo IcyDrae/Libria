@@ -30,7 +30,7 @@ only for the pdf
 20. upload all other file types and create subfolders for each type [x]
 21. view epubs in the browser [x]
 22. fix uploading removes all files from the UI
-23. create collections
-24. Collections will be created on the Collections.cshtml and Collections.cshtml.cs files, using an input to create collections,
-25. Show all collections and their corresponding files in the Collections.cshtml component
-26. Add a file to a collection in the Index.cshtml file using a dropdown
+23. create collections [x]
+24. Collections will be created on the Collections.cshtml and Collections.cshtml.cs files, using an input to create collections, [x]
+25. Show all collections and their corresponding files in the Collections.cshtml component [x]
+26. Add a file to a collection in the Index.cshtml file using a dropdown [x]
