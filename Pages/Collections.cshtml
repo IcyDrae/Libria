@@ -1,0 +1,88 @@
+﻿@page
+@model CollectionsModel
+@{
+    ViewData["Title"] = "Collections";
+}
+
+<h1>Collections</h1>
+
+<div style="margin-bottom:20px;">
+    <form method="post" asp-page-handler="Create" class="d-flex" style="gap:8px;">
+        <input asp-for="NewCollectionName" placeholder="New collection name" />
+        <button type="submit" class="btn btn-primary">Create collection</button>
+    </form>
+</div>
+
+@if (!Model.Collections.Any())
+{
+    <p>No collections yet.</p>
+}
+else
+{
+    @foreach (var col in Model.Collections)
+    {
+        <div class="card" style="margin-bottom:18px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0;">@col.Name (@col.Files.Count)</h3>
+
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <form method="post" asp-page-handler="DeleteCollection" asp-route-id="@col.Id" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Delete collection & remove its associations? This will NOT delete files from disk. Continue?')">
+                            Delete collection
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            @if (col.Files.Any())
+            {
+                <table class="table" style="margin-top:12px;">
+                    <thead>
+                        <tr>
+                            <th style="width:50%;">File</th>
+                            <th style="width:15%;">Size</th>
+                            <th style="width:20%;">Uploaded</th>
+                            <th style="width:15%;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var f in col.Files)
+                    {
+                        <tr>
+                            <td>@f.FileName</td>
+                            <td>@(f.FileSize / 1024) KB</td>
+                            <td>@f.UploadedAt.ToLocalTime()</td>
+                            <td>
+                                <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+                                    <a class="btn btn-primary btn-sm" href="/ViewFile/@f.Id">View</a>
+
+                                    <form method="post" asp-page-handler="RemoveFromCollection" style="margin:0;"
+                                          asp-route-collectionId="@col.Id" asp-route-fileId="@f.Id">
+                                        <button type="submit" class="btn btn-warning btn-sm"
+                                                onclick="return confirm('Remove this file from the collection?')">
+                                            Remove from collection
+                                        </button>
+                                    </form>
+
+                                    <form method="post" asp-page-handler="DeleteFile" style="margin:0;"
+                                          asp-route-id="@f.Id">
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Delete this file completely (database + disk)? This cannot be undone.')">
+                                            Delete file
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p style="margin-top:12px;">No files in this collection.</p>
+            }
+        </div>
+    }
+}

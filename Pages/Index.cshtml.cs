@@ -22,6 +22,7 @@ public class IndexModel : PageModel
     [BindProperty]
     public IFormFile? File { get; set; }
     public List<File> UploadedFiles { get; set; } = new();
+    public List<Collection> Collections { get; set; } = new();
     public string? UploadMessage { get; set; }
 
     // Internal helper fields
@@ -42,6 +43,7 @@ public class IndexModel : PageModel
     public async Task OnGetAsync()
     {
         await PopulateFileLists();
+        Collections = await _db.Collection.ToListAsync();
     }
 
     public async Task<IActionResult> OnPostAsync()
@@ -91,6 +93,25 @@ public class IndexModel : PageModel
 
         _db.File.Remove(fileRecord);
         await _db.SaveChangesAsync();
+
+        return RedirectToPage();
+    }
+
+    public async Task<IActionResult> OnPostAddToCollection(int fileId, int collectionId)
+    {
+        var file = await _db.File.Include(f => f.Collections)
+                                .FirstOrDefaultAsync(f => f.Id == fileId);
+
+        var collection = await _db.Collection.FindAsync(collectionId);
+
+        if (file != null && collection != null)
+        {
+            if (!file.Collections.Any(c => c.Id == collectionId))
+            {
+                file.Collections.Add(collection);
+                await _db.SaveChangesAsync();
+            }
+        }
 
         return RedirectToPage();
     }

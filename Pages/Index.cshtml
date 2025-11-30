@@ -47,6 +47,19 @@
                         <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
+                        <form class="inline-collection-form" method="post" asp-page-handler="AddToCollection">
+                            <input type="hidden" name="fileId" value="@f.Id" />
+
+                            <select name="collectionId">
+                                <option value="">Add to collection...</option>
+                                @foreach (var col in Model.Collections)
+                                {
+                                    <option value="@col.Id">@col.Name</option>
+                                }
+                            </select>
+
+                            <button type="submit" class="btn btn-secondary">Add</button>
+                        </form>
                     </div>
                 </td>
             </tr>
@@ -83,6 +96,19 @@ else
                         <a class="btn btn-primary" href="/ViewFile/@f.Id">View</a>
                         <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
                             <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                        <form method="post" asp-page-handler="AddToCollection" style="display:inline;">
+                            <input type="hidden" name="fileId" value="@f.Id" />
+
+                            <select name="collectionId">
+                                <option value="">Add to collection...</option>
+                                @foreach (var col in Model.Collections)
+                                {
+                                    <option value="@col.Id">@col.Name</option>
+                                }
+                            </select>
+
+                            <button type="submit" class="btn btn-secondary">Add</button>
                         </form>
                     </div>
                 </td>
@@ -121,6 +147,19 @@ else
                         <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
+                        <form method="post" asp-page-handler="AddToCollection" style="display:inline;">
+                            <input type="hidden" name="fileId" value="@f.Id" />
+
+                            <select name="collectionId">
+                                <option value="">Add to collection...</option>
+                                @foreach (var col in Model.Collections)
+                                {
+                                    <option value="@col.Id">@col.Name</option>
+                                }
+                            </select>
+
+                            <button type="submit" class="btn btn-secondary">Add</button>
+                        </form>
                     </div>
                 </td>
             </tr>
@@ -158,6 +197,19 @@ else
                         <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
                             <button type="submit" class="btn btn-danger">Delete</button>
                         </form>
+                        <form method="post" asp-page-handler="AddToCollection" style="display:inline;">
+                            <input type="hidden" name="fileId" value="@f.Id" />
+
+                            <select name="collectionId">
+                                <option value="">Add to collection...</option>
+                                @foreach (var col in Model.Collections)
+                                {
+                                    <option value="@col.Id">@col.Name</option>
+                                }
+                            </select>
+
+                            <button type="submit" class="btn btn-secondary">Add</button>
+                        </form>
                     </div>
                 </td>
             </tr>
@@ -191,9 +243,22 @@ else
                 <td>@f.UploadedAt.ToLocalTime()</td>
                 <td>
                     <div class="action-buttons-vertical">
-                        <a class="btn btn-primary btn-sm" href="/ViewFile/@f.Id">View</a>
+                        <a class="btn btn-primary" href="/ViewFile/@f.Id">View</a>
                         <form method="post" asp-page-handler="Delete" asp-route-id="@f.Id">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                        <form method="post" asp-page-handler="AddToCollection" style="display:inline;">
+                            <input type="hidden" name="fileId" value="@f.Id" />
+
+                            <select name="collectionId">
+                                <option value="">Add to collection...</option>
+                                @foreach (var col in Model.Collections)
+                                {
+                                    <option value="@col.Id">@col.Name</option>
+                                }
+                            </select>
+
+                            <button type="submit" class="btn btn-secondary">Add</button>
                         </form>
                     </div>
                 </td>
